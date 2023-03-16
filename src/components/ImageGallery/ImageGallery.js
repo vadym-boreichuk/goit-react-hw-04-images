@@ -45,6 +45,7 @@ export const ImageGallery = ({
         setError(error);
         setStatus('rejected');
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export const ImageGallery = ({
         setError(error);
         setStatus('rejected');
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   if (status === 'pending') {
