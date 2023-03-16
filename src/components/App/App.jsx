@@ -1,48 +1,43 @@
 import { LoadMore } from 'components/Button/Button';
 import { Modal } from 'components/Modal/Modal';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { ImageGallery } from '../ImageGallery/ImageGallery';
 import { SearchBarForm } from '../Searchbar/Searchbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export class App extends Component {
-  state = {
-    searchText: '',
-    btnVisible: false,
-    page: 1,
-    perPage: 12,
-    showModal: false,
-    currentImageUrl: null,
-    currentImageDescription: null,
+export const App = () => {
+  const [searchText, setSearchText] = useState('');
+  const [btnVisible, setBtnVisible] = useState(false);
+  const [page, setPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [currentImageDescription, setCurrentImageDescription] = useState(null);
+  const [imgArray, setImgArray] = useState([]);
+
+  const toogleModal = () => setShowModal(prev => !prev);
+
+  const onLoadImg = () => {
+    setBtnVisible(false);
+    setPage(prevPage => prevPage + 1);
   };
 
-  toogleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
-  };
-
-  onLoadImg = () => {
-    this.setState({ btnVisible: false });
-    this.setState(({ page }) => ({ page: page + 1 }));
-  };
-
-  statusState = e => {
+  const statusState = e => {
     if (e.length === 12) {
-      return this.setState({ btnVisible: true });
+      return setBtnVisible(true);
     }
-    if (e.length < 12) {
-      return this.setState({ btnVisible: false });
+    if (e.length !== 12) {
+      return setBtnVisible(false);
     }
   };
 
-  onSubmit = event => {
+  const onSubmit = event => {
     event.preventDefault();
-    this.setState({
-      btnVisible: false,
-      page: 1,
-      perPage: 12,
-      showModal: false,
-    });
+    setBtnVisible(false);
+    setPage(1);
+    setShowModal(false);
+    setImgArray([]);
+
     const form = event.currentTarget;
     const text = form.elements.search.value.trim();
 
@@ -53,49 +48,50 @@ export class App extends Component {
       return;
     }
     try {
-      this.setState({ searchText: text });
+      setSearchText(text);
       form.reset();
     } catch (error) {
       toast.error('error', {
         theme: 'colored',
       });
-      this.setState({ btnVisible: false });
+      setBtnVisible(false);
       form.reset();
     }
   };
 
-  openModal = (img, alt) => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-      currentImageUrl: img,
-      currentImageDescription: alt,
-    }));
+  const openModal = (img, alt) => {
+    setShowModal(!showModal);
+    setCurrentImageUrl(img);
+    setCurrentImageDescription(alt);
   };
 
-  render() {
-    const { state, onSubmit, statusState, onLoadImg, toogleModal, openModal } =
-      this;
-    return (
-      <>
-        {state.showModal && (
-          <Modal
-            currentImageDescription={state.currentImageDescription}
-            currentImageUrl={state.currentImageUrl}
-            toogleModal={toogleModal}
-          />
-        )}
-        <SearchBarForm onSubmit={onSubmit} />
-        <ImageGallery
-          btnVisible={state.btnVisible}
-          perPage={state.perPage}
-          page={state.page}
-          openModal={openModal}
-          searchText={state.searchText}
-          statusState={statusState}
+  useEffect(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+  });
+
+  return (
+    <>
+      {showModal && (
+        <Modal
+          currentImageDescription={currentImageDescription}
+          currentImageUrl={currentImageUrl}
+          toogleModal={toogleModal}
         />
-        {state.btnVisible && <LoadMore onClick={onLoadImg} />}
-        <ToastContainer />
-      </>
-    );
-  }
-}
+      )}
+      <SearchBarForm onSubmit={onSubmit} />
+      <ImageGallery
+        page={page}
+        openModal={openModal}
+        searchText={searchText}
+        statusState={statusState}
+        imgArray={imgArray}
+        setImgArray={setImgArray}
+      />
+      {btnVisible && <LoadMore onClick={onLoadImg} />}
+      <ToastContainer />
+    </>
+  );
+};
